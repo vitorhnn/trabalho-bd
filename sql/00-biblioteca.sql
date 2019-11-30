@@ -1,0 +1,4 @@
+CREATE TABLE Biblioteca(
+    CodBib SERIAL PRIMARY KEY NOT NULL,
+    NomeBiblioteca CHARACTER VARYING NOT NULL
+);

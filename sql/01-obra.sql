@@ -1,0 +1,9 @@
+CREATE TABLE Obra(
+    CodObra SERIAL PRIMARY KEY NOT NULL,
+    TituloObra CHARACTER VARYING NOT NULL,
+    AnoObra INT NOT NULL,
+    EditoraObra CHARACTER VARYING NOT NULL,
+    CodBib INTEGER,
+
+    FOREIGN KEY (CodBib) REFERENCES Biblioteca(CodBib)
+);
