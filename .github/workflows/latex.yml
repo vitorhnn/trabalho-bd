@@ -20,3 +20,4 @@ jobs:
       with:
         name: relatório
         path: relatório/relatório.pdf
+        extra_system_packages: "ttf-liberation"
