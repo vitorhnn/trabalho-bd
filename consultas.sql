@@ -13,7 +13,6 @@ WHERE
     );
 
 -- Listar o nome do usuário e o título da obra dos empréstimos de cada usuário
-
 SELECT
     NomeUsu, TituloObra
 FROM

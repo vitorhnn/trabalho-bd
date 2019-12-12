@@ -1,7 +1,6 @@
--- Não há DELETE em álgebra relacional, então vou apenas escrever a seleção
 -- Excluir reservas que vencem em 20/12/2007 do usuário João Nascimento
 JNCod := Π(CodUsu)(σ(NomeUsu = 'João Nascimento')(Usuario))
-σ(DataVencimento = '2007-12-20' ∧ CodUsu = JNCod)(Emprestimo)
+Emprestimo <- Emprestimo - (σ(DataVencimento = '2007-12-20' ∧ CodUsu = JNCod)(Emprestimo))
 
 -- Listar o nome do usuário e o título da obra dos empréstimos de cada usuário
 Π(NomeUsu, CodObra)(Usuario ⋈ Emprestimo ⋈ Obra)
@@ -9,6 +8,13 @@ JNCod := Π(CodUsu)(σ(NomeUsu = 'João Nascimento')(Usuario))
 -- Exibir obras de 2004 que possuem reserva
 Π(TituloObra)(σ(AnoObra = 2004)(Obra) ⋈ Emprestimo)
 
+-- Exibir o nome da biblioteca e o número total de obras se o número total de obras for maior que 1000 obras
+Π(NomeBiblioteca, NumObras)(σ(NumObras > 1000)(G(count(CodObra) as NumObras)(Biblioteca ⟖ Obra)))
+
 -- Nomes dos usuários que não estão com empréstimos
-ComEmprestimo := Usuario ⋈ Emprestimo
-Π(NomeUsu)(Usuario \ ComEmprestimo)
+ComEmprestimo := Π(CodUsu, NomeUsu)(Usuario ⋈ Emprestimo)
+Π(NomeUsu)(Π(CodUsu, NomeUsu)(Usuario) - ComEmprestimo)
+
+-- Editora ABC, três consultas
+Π(NomeBiblioteca, TituloObra)(σ(EditoraObra = 'ABC')(Obra ⋈ Biblioteca))
+Π(NomeBiblioteca, TituloObra)(σ(Obra.CodBib = Biblioteca.CodBib ∧ Obra.EditoraObra = 'ABC')(Obra X Biblioteca))

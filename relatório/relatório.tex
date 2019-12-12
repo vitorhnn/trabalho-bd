@@ -1,0 +1,228 @@
+\documentclass[12pt]{article}
+
+\usepackage{sbc-template}
+\usepackage{graphicx,url}
+\usepackage{hyphenat}
+\hyphenation{mate-mática recu-perar}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\definecolor{backcolor}{rgb}{0.92,0.92,0.92}
+
+\def\ojoin{\setbox0=\hbox{$\bowtie$}%
+  \rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
+\def\leftouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie}}
+\def\rightouterjoin{\mathbin{\bowtie\mkern-5.8mu\ojoin}}
+\def\fullouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie\mkern-5.8mu\ojoin}}
+
+\lstdefinestyle{style}{
+  backgroundcolor=\color{backcolor},
+  captionpos=b,
+  basicstyle=\ttfamily\scriptsize
+}
+
+\lstset{style=style}
+     
+\sloppy
+
+\title{Relatório de Trabalho de Banco de Dados}
+
+\author{Victor Hermann V. Chiletto}
+
+
+\address{Departamento de Ciência da Computação \\Universidade Federal Rural do Rio de Janeiro (UFRRJ)
+  \email{v@hnn.net.br}}
+
+\begin{document} 
+
+\maketitle
+
+\section{Proposta do trabalho}
+
+Foi proposto como trabalho a normalização até à terceira forma normal de um modelo lógico (listagem \ref{lst:modini}) e a realização de consultas em álgebra relacional e SQL no modelo lógico normalizado.
+
+\begin{lstlisting}[caption=Modelo lógico inicial, label={lst:modini}]
+Biblioteca (CodBib PK, NomeBiblioteca)
+
+Obra(CodObra PK, TituloObra, AnoObra, EditoraObra, CodBib)
+CodBib referencia Biblioteca
+
+Emprestimo(CodObra PK, CodUsu PK, DataVencimento PK, NomeUsu)
+  CodObra referencia Obra
+\end{lstlisting}
+
+\section{Normalizações}
+  \subsection{Primeira forma normal}
+    Como não há tabelas aninhadas, não foi necessário tomar nenhuma ação nesse passo.
+
+  \subsection{Segunda forma normal}
+    Há uma dependência funcional entre CodUsu e NomeUsu na relação Empréstimo. Criamos uma nova relação, Usuario, para normalizar segundo a segunda forma normal.
+
+    \begin{lstlisting}[caption=Modelo lógico na segunda forma normal, label={lst:mod2fn}]
+Biblioteca (CodBib PK, NomeBiblioteca)
+
+Obra(CodObra PK, TituloObra, AnoObra, EditoraObra, CodBib)
+CodBib referencia Biblioteca
+
+Usuario(CodUsu PK, NomeUsu)
+
+Emprestimo(CodObra PK, CodUsu PK, DataVencimento PK)
+CodObra referencia Obra
+CodUsu referencia Usuario
+    \end{lstlisting}
+  
+  \subsection{Terceira forma normal}
+  Como não há dependências transitivas, não foi necesśario tomar nenhuma ação nesse passo.
+
+\section{Consultas em álgebra relacional}
+Usaremos o modelo lógido descrito na listagem \ref{lst:mod2fn} para todas as consultas.
+
+  \subsection{Excluir reservas que vencem em 20/12/2007 do usuário João Nascimento}
+    \begin{align*}
+\mathit{JNCod} &:= \Pi_{\mathit{CodUsu}}(\sigma(\mathit{NomeUsu} = \mathit{'João Nascimento'})(\mathit{Usuario})) \\
+\mathit{Emprestimo} &\gets \mathit{Emprestimo} - (\sigma_{\mathit{DataVencimento} = \mathit{'2007-12-20'} \land \mathit{CodUsu} = \mathit{JNCod}}(\mathit{Emprestimo}))
+    \end{align*}
+  \subsection{Listar o nome do usuário e o título da obra dos empréstimos de cada usuário}
+    \begin{align*}
+\Pi_{\mathit{NomeUsu, CodObra}}(\mathit{Usuario} \bowtie \mathit{Emprestimo} \bowtie \mathit{Obra})
+    \end{align*}
+  \subsection{Exibir o nome da biblioteca e o número total de obras se o número total de obras for maior que 1000}
+    \begin{align*}
+\Pi_{\mathit{NomeBiblioteca}, \mathit{NumObras}}(\sigma_{\mathit{NumObras} > 1000}(\Gamma_{\operatorname{count}(\mathit{CodObra}) \operatorname{as} \mathit{NumObras}}(\mathit{Biblioteca} \leftouterjoin \mathit{Obra})))
+    \end{align*}
+  \subsection{Nomes dos usuários que não estão com empréstimos}
+    \begin{align*}
+      &\mathit{ComEmprestimo} := \Pi_{\mathit{CodUsu}, \mathit{NomeUsu}}(\mathit{Usuario} \bowtie \mathit{Emprestimo}) \\
+      \Pi&_{\mathit{NomeUsu}}(\Pi_{\mathit{CodUsu}, \mathit{NomeUsu}}(\mathit{Usuario}) - \mathit{ComEmprestimo})
+    \end{align*}
+  \subsection{Três expressões equivalentes para selecionar o nome da biblioteca e título das obras da editora "ABC"}
+    \begin{align*}
+      \Pi&_{\mathit{NomeBiblioteca}, \mathit{TituloObra}}(\sigma_{\mathit{EditoraObra} = \mathit{'ABC'}}(\mathit{Obra} \bowtie \mathit{Biblioteca})) \\
+      \Pi&_{\mathit{NomeBiblioteca}, \mathit{TituloObra}}(\sigma_{\mathit{Obra.CodBib} = \mathit{Biblioteca.CodBib} \land \mathit{Obra.EditoraObra} = \mathit{'ABC'}}(Obra \times Biblioteca))
+    \end{align*}
+\section{Consultas em SQL}
+Usamos os scripts na listagem \ref{lst:seedsql} para gerar o banco de dados para as seguintes consultas. Os scripts foram testados no sistema gerenciador de banco de dados PostgreSQL.
+
+    \begin{lstlisting}[caption=Scripts em SQL para geração do banco de dados, label={lst:seedsql}, language=SQL]
+CREATE TABLE Biblioteca(
+    CodBib SERIAL PRIMARY KEY NOT NULL,
+    NomeBiblioteca CHARACTER VARYING NOT NULL
+);
+
+CREATE TABLE Obra(
+    CodObra SERIAL PRIMARY KEY NOT NULL,
+    TituloObra CHARACTER VARYING NOT NULL,
+    AnoObra INT NOT NULL,
+    EditoraObra CHARACTER VARYING NOT NULL,
+    CodBib INTEGER,
+
+    FOREIGN KEY (CodBib) REFERENCES Biblioteca(CodBib)
+);
+
+CREATE TABLE Usuario(
+    CodUsu SERIAL PRIMARY KEY NOT NULL,
+    NomeUsu CHARACTER VARYING NOT NULL
+);
+
+CREATE TABLE Emprestimo(
+    CodObra INTEGER NOT NULL,
+    CodUsu INTEGER NOT NULL,
+    DataVencimento DATE NOT NULL,
+
+    PRIMARY KEY(CodObra, CodUsu, DataVencimento),
+    FOREIGN KEY(CodObra) REFERENCES Obra(CodObra),
+    FOREIGN KEY(CodUsu) REFERENCES Usuario(CodUsu)
+);
+
+INSERT INTO Biblioteca (NomeBiblioteca) VALUES
+ ('Biblioteca do IM'),
+ ('Biblioteca de Seropédica'),
+ ('Biblioteca do CT');
+
+INSERT INTO Usuario (NomeUsu) VALUES
+  ('João Nascimento'),
+  ('Victor Chiletto'),
+  ('Maria Silva');
+
+INSERT INTO Obra (TituloObra, AnoObra, EditoraObra, CodBib) VALUES 
+  ('The C Programming Language, 2nd edition', 1988, 'Prentice Hall', 1),
+  ('The C Programming Language, 2nd edition', 1988, 'Prentice Hall', 3),
+  ('Um livro aleatório de 2004', 2004, 'Editora Aleatória', 2);
+
+INSERT INTO Emprestimo (CodObra, CodUsu, DataVencimento) VALUES 
+  (2, 1, '2007-12-20'),
+  (1, 2, '2019-06-08'),
+  (3, 2, '2019-12-06');
+    \end{lstlisting}
+
+    \subsection{Excluir todas as reservas que vencem em 20/12/2007 do usuário João Nascimento}
+      \begin{lstlisting}[language=SQL]
+DELETE FROM
+  Emprestimo
+WHERE
+  DataVencimento = '2007-12-20'
+  and CodUsu = (
+    SELECT
+      CodUsu
+    FROM
+      Usuario
+    WHERE
+      NomeUsu = 'João Nascimento'
+  );
+      \end{lstlisting}
+    \subsection{Listar o nome do usuário e o título da obra dos empréstimos de cada usuário}
+      \begin{lstlisting}[language=SQL]
+SELECT
+    NomeUsu, TituloObra
+FROM
+    Usuario
+INNER JOIN
+    Emprestimo ON Usuario.CodUsu = Emprestimo.CodUsu
+INNER JOIN
+    Obra ON Emprestimo.CodObra = Obra.CodObra;
+      \end{lstlisting}
+    \subsection{Exibir obras de 2004 que possuem reserva}
+      \begin{lstlisting}[language=SQL]
+SELECT DISTINCT
+    TituloObra
+FROM
+    Obra
+INNER JOIN
+    Emprestimo ON Obra.CodObra = Emprestimo.CodObra
+WHERE
+    Obra.AnoObra = 2004;
+      \end{lstlisting}
+    \subsection{Exibir o nome da biblioteca e o número total de obras se o número total de obras for maior que 1000 obras}
+      \begin{lstlisting}[language=SQL]
+SELECT
+    NomeBiblioteca, COUNT(Obra.CodObra) AS NumObras
+FROM
+    Biblioteca
+LEFT OUTER JOIN
+    Obra ON Biblioteca.CodBib = Obra.CodBib
+GROUP BY
+    NomeBiblioteca
+HAVING
+    COUNT(Obra.CodObra) > 1000;
+      \end{lstlisting}
+    \subsection{Nomes dos usuários que não estão com empréstimos}
+      \begin{lstlisting}[language=SQL]
+SELECT
+    NomeUsu
+FROM
+    Usuario
+WHERE
+    Usuario.CodUsu NOT IN (
+        SELECT
+            InnerUsuario.CodUsu
+        FROM
+            Usuario as InnerUsuario
+        INNER JOIN
+            Emprestimo on InnerUsuario.CodUsu = Emprestimo.CodUsu
+    );
+      \end{lstlisting}
+
+\end{document}
