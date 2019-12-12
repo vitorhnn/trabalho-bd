@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compile LaTeX
-      uses: xu-cheng/latex-action@v1.2.1
+      uses: xu-cheng/latex-action@1.2.1
       with:
         root_file: relatório.tex
         working_directory: relatório
