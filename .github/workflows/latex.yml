@@ -10,9 +10,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Compile LaTeX
-      uses: dante-ev/latex-action@v0.2.0
+      uses: xu-cheng/latex-action@v1.2.1
       with:
-        root_file: relatório/relatório.tex
+        root_file: relatório.tex
         working_directory: relatório
         args: "-xelatex -synctex=1 -interaction=nonstopmode -file-line-error"
     - name: Generate build artifact
