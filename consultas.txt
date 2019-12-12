@@ -1,0 +1,14 @@
+-- Não há DELETE em álgebra relacional, então vou apenas escrever a seleção
+-- Excluir reservas que vencem em 20/12/2007 do usuário João Nascimento
+JNCod := Π(CodUsu)(σ(NomeUsu = 'João Nascimento')(Usuario))
+σ(DataVencimento = '2007-12-20' ∧ CodUsu = JNCod)(Emprestimo)
+
+-- Listar o nome do usuário e o título da obra dos empréstimos de cada usuário
+Π(NomeUsu, CodObra)(Usuario ⋈ Emprestimo ⋈ Obra)
+
+-- Exibir obras de 2004 que possuem reserva
+Π(TituloObra)(σ(AnoObra = 2004)(Obra) ⋈ Emprestimo)
+
+-- Nomes dos usuários que não estão com empréstimos
+ComEmprestimo := Usuario ⋈ Emprestimo
+Π(NomeUsu)(Usuario \ ComEmprestimo)

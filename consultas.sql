@@ -46,7 +46,7 @@ HAVING
     COUNT(Obra.CodObra) > 1000;
 
 -- Nomes dos usuários que não estão com empréstimos
-EXPLAIN SELECT
+SELECT
     NomeUsu
 FROM
     Usuario
