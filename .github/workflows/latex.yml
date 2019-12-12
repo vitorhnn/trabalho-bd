@@ -15,9 +15,9 @@ jobs:
         root_file: relatório.tex
         working_directory: relatório
         args: "-xelatex -synctex=1 -interaction=nonstopmode -file-line-error"
+        extra_system_packages: "ttf-liberation"
     - name: Generate build artifact
       uses: actions/upload-artifact@v1
       with:
         name: relatório
         path: relatório/relatório.pdf
-        extra_system_packages: "ttf-liberation"
