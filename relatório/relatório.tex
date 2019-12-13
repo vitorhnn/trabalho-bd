@@ -18,6 +18,7 @@
 \def\rightouterjoin{\mathbin{\bowtie\mkern-5.8mu\ojoin}}
 \def\fullouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie\mkern-5.8mu\ojoin}}
 
+\renewcommand{\lstlistingname}{Código}
 \lstdefinestyle{style}{
   backgroundcolor=\color{backcolor},
   captionpos=b,
@@ -42,7 +43,7 @@
 
 \section{Proposta do trabalho}
 
-Foi proposto como trabalho a normalização até à terceira forma normal de um modelo lógico (listagem \ref{lst:modini}) e a realização de consultas em álgebra relacional e SQL no modelo lógico normalizado.
+Foi proposto como trabalho a normalização até à terceira forma normal de um modelo lógico (código \ref{lst:modini}) e a realização de consultas em álgebra relacional e SQL no modelo lógico normalizado.
 
 \begin{lstlisting}[caption=Modelo lógico inicial, label={lst:modini}]
 Biblioteca (CodBib PK, NomeBiblioteca)
@@ -59,7 +60,7 @@ Emprestimo(CodObra PK, CodUsu PK, DataVencimento PK, NomeUsu)
     Como não há tabelas aninhadas, não foi necessário tomar nenhuma ação nesse passo.
 
   \subsection{Segunda forma normal}
-    Há uma dependência funcional entre CodUsu e NomeUsu na relação Empréstimo. Criamos uma nova relação, Usuario, para normalizar segundo a segunda forma normal.
+    Há uma dependência funcional entre CodUsu e NomeUsu na relação Empréstimo. Criamos uma nova relação, Usuario, e removemos NomeUsu de Empréstimo para normalizar segundo a segunda forma normal.
 
     \begin{lstlisting}[caption=Modelo lógico na segunda forma normal, label={lst:mod2fn}]
 Biblioteca (CodBib PK, NomeBiblioteca)
@@ -77,8 +78,10 @@ CodUsu referencia Usuario
   \subsection{Terceira forma normal}
   Como não há dependências transitivas, não foi necesśario tomar nenhuma ação nesse passo.
 
+\newpage
+
 \section{Consultas em álgebra relacional}
-Usaremos o modelo lógido descrito na listagem \ref{lst:mod2fn} para todas as consultas.
+Usaremos o modelo lógico descrito no código \ref{lst:mod2fn} para todas as consultas.
 
   \subsection{Excluir reservas que vencem em 20/12/2007 do usuário João Nascimento}
     \begin{align*}
@@ -101,10 +104,14 @@ Usaremos o modelo lógido descrito na listagem \ref{lst:mod2fn} para todas as co
   \subsection{Três expressões equivalentes para selecionar o nome da biblioteca e título das obras da editora "ABC"}
     \begin{align*}
       \Pi&_{\mathit{NomeBiblioteca}, \mathit{TituloObra}}(\sigma_{\mathit{EditoraObra} = \mathit{'ABC'}}(\mathit{Obra} \bowtie \mathit{Biblioteca})) \\
-      \Pi&_{\mathit{NomeBiblioteca}, \mathit{TituloObra}}(\sigma_{\mathit{Obra.CodBib} = \mathit{Biblioteca.CodBib} \land \mathit{Obra.EditoraObra} = \mathit{'ABC'}}(Obra \times Biblioteca))
+      \Pi&_{\mathit{NomeBiblioteca}, \mathit{TituloObra}}(\sigma_{\mathit{Obra.CodBib} = \mathit{Biblioteca.CodBib} \land \mathit{Obra.EditoraObra} = \mathit{'ABC'}}(\mathit{Obra} \times \mathit{Biblioteca}))
     \end{align*}
+
+\newpage
+
 \section{Consultas em SQL}
-Usamos os scripts na listagem \ref{lst:seedsql} para gerar o banco de dados para as seguintes consultas. Os scripts foram testados no sistema gerenciador de banco de dados PostgreSQL.
+Usamos os scripts no código \ref{lst:seedsql} para gerar o banco de dados para as seguintes consultas. Os scripts foram testados no sistema gerenciador de banco de dados PostgreSQL.\\\\
+Anexado à este relatório há um \textit{Dockerfile} que usa o script do código \ref{lst:seedsql} para gerar uma imagem, o que pode ser usado como facilitador na hora de testar as consultas.
 
     \begin{lstlisting}[caption=Scripts em SQL para geração do banco de dados, label={lst:seedsql}, language=SQL]
 CREATE TABLE Biblioteca(
@@ -157,6 +164,8 @@ INSERT INTO Emprestimo (CodObra, CodUsu, DataVencimento) VALUES
   (1, 2, '2019-06-08'),
   (3, 2, '2019-12-06');
     \end{lstlisting}
+
+  \newpage
 
     \subsection{Excluir todas as reservas que vencem em 20/12/2007 do usuário João Nascimento}
       \begin{lstlisting}[language=SQL]
